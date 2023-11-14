@@ -60,6 +60,12 @@ public final class EncryptionConstants {
     /** Tag of Attr PartyVInfo**/
     public static final String _ATT_SUPPPRIVINFO = "SuppPrivInfo";
 
+    /** Tag of Attr Info**/
+    public static final String _ATT_INFO = "Info";
+
+    /** Tag of Attr Info**/
+    public static final String _ATT_KEYLENGTH = "KeyLength";
+
 
     /** Tag of Element CarriedKeyName **/
     public static final String _TAG_CARRIEDKEYNAME = "CarriedKeyName";
@@ -126,6 +132,9 @@ public final class EncryptionConstants {
 
     /** Tag of Element ConcatKDFParams **/
     public static final String _TAG_CONCATKDFPARAMS = "ConcatKDFParams";
+
+    /** Tag of Element HKDFParams **/
+    public static final String _TAG_HKDFPARAMS = "HKDFParams";
 
     /** Field ENCRYPTIONSPECIFICATION_URL */
     public static final String ENCRYPTIONSPECIFICATION_URL =
@@ -288,6 +297,10 @@ public final class EncryptionConstants {
     /** Key derivation function ConcatKDF */
     public static final String ALGO_ID_KEYDERIVATION_CONCATKDF =
             EncryptionConstants.EncryptionSpec11NS + "ConcatKDF";
+
+    /** Key derivation function ConcatKDF */
+    public static final String ALGO_ID_KEYDERIVATION_HKDF =
+            Constants.XML_DSIG_NS_MORE_07_05 + "hkdf";
 
     private EncryptionConstants() {
         // we don't allow instantiation

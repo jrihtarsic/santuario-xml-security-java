@@ -363,6 +363,7 @@
                                 <schemaInclude>bindings/schemas/exc-c14n.xsd</schemaInclude>
                                 <schemaInclude>bindings/schemas/xmldsig-core-schema.xsd</schemaInclude>
                                 <schemaInclude>bindings/schemas/xmldsig11-schema.xsd</schemaInclude>
+                                <schemaInclude>bindings/schemas/xmldsig-more-rfc9231.xsd</schemaInclude>
                                 <schemaInclude>bindings/schemas/xenc-schema.xsd</schemaInclude>
                                 <schemaInclude>bindings/schemas/xenc-schema-11.xsd</schemaInclude>
                                 <schemaInclude>bindings/schemas/rsa-pss.xsd</schemaInclude>
@@ -372,6 +373,7 @@
                                 <bindingInclude>c14n.xjb</bindingInclude>
                                 <bindingInclude>dsig.xjb</bindingInclude>
                                 <bindingInclude>dsig11.xjb</bindingInclude>
+                                <bindingInclude>dsig-more.xjb</bindingInclude>
                                 <bindingInclude>xenc.xjb</bindingInclude>
                                 <bindingInclude>xenc11.xjb</bindingInclude>
                                 <bindingInclude>security-config.xjb</bindingInclude>

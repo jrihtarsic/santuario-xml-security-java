@@ -21,11 +21,13 @@ package org.apache.xml.security.utils;
 import org.apache.xml.security.algorithms.implementations.ECDSAUtils;
 import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.encryption.params.ConcatKeyDerivationParameter;
+import org.apache.xml.security.encryption.params.HMacKeyDerivationParameter;
 import org.apache.xml.security.encryption.params.KeyAgreementParameterSpec;
 import org.apache.xml.security.encryption.params.KeyDerivationParameter;
 import org.apache.xml.security.exceptions.DERDecodingException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.derivedKey.ConcatKDF;
+import org.apache.xml.security.keys.derivedKey.HKDF;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -254,17 +256,31 @@ public class KeyUtils {
             throws XMLSecurityException {
         int iKeySize = keyDerivationParameter.getKeyBitLength()/8;
         String keyDerivationAlgorithm = keyDerivationParameter.getAlgorithm();
-        if (!EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(keyDerivationAlgorithm)) {
-            throw new XMLEncryptionException( "unknownAlgorithm",
-                    keyDerivationAlgorithm);
-        }
-        ConcatKeyDerivationParameter ckdfParameter = (ConcatKeyDerivationParameter) keyDerivationParameter;
+        if (EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(keyDerivationAlgorithm)) {
+            return deriveKeyEncryptionKey(sharedSecret, iKeySize, (ConcatKeyDerivationParameter) keyDerivationParameter);
 
+        }
+        if (EncryptionConstants.ALGO_ID_KEYDERIVATION_HKDF.equals(keyDerivationAlgorithm)) {
+            return deriveKeyEncryptionKey(sharedSecret, iKeySize, (HMacKeyDerivationParameter) keyDerivationParameter);
+        }
+        throw new XMLEncryptionException( "unknownAlgorithm",
+                keyDerivationAlgorithm);
+    }
+
+    public static byte[] deriveKeyEncryptionKey(byte[] sharedSecret, int iKeySize, HMacKeyDerivationParameter kdfParameter )
+            throws XMLSecurityException {
+        String digestAlgorithm = kdfParameter.getDigestAlgorithm();
+        HKDF kdf = new HKDF(digestAlgorithm, kdfParameter.getSalt());
+        return kdf.deriveKey(sharedSecret, kdfParameter.getInfo(), iKeySize);
+    }
+
+    public static byte[] deriveKeyEncryptionKey(byte[] sharedSecret, int iKeySize, ConcatKeyDerivationParameter ckdfParameter )
+            throws XMLSecurityException {
 
         // get parameters
         String digestAlgorithm =ckdfParameter.getDigestAlgorithm();
         if (digestAlgorithm == null) {
-            LOG.log(Level.DEBUG, "Missing ConcatKDFParams Digest algorithm for key derivation with algorithm [{0}]", keyDerivationAlgorithm);
+            LOG.log(Level.DEBUG, "Missing ConcatKDFParams Digest algorithm for key derivation with algorithm");
             throw new XMLEncryptionException("errorInKeyDerivation");
         }
 

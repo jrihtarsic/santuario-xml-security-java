@@ -137,6 +137,9 @@ public final class Constants {
     /** Tag of Element RSAPSSParams **/
     public static final String _TAG_RSAPSSPARAMS = "RSAPSSParams";
 
+    /** Tag of Element Salt **/
+    public static final String _TAG_SALT = "Salt";
+
     /** Tag of Element SaltLength **/
     public static final String _TAG_SALTLENGTH = "SaltLength";
 

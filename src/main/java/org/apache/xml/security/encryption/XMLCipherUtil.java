@@ -20,12 +20,10 @@ package org.apache.xml.security.encryption;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.security.AccessController;
-import java.security.PrivateKey;
-import java.security.PrivilegedAction;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.MGF1ParameterSpec;
+import java.util.Base64;
 
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -33,12 +31,14 @@ import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
 
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.apache.xml.security.encryption.params.ConcatKeyDerivationParameter;
+import org.apache.xml.security.encryption.params.HMacKeyDerivationParameter;
 import org.apache.xml.security.encryption.params.KeyAgreementParameterSpec;
 import org.apache.xml.security.encryption.params.KeyDerivationParameter;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.derivedKey.ConcatKDFParamsImpl;
-import org.apache.xml.security.keys.derivedKey.KeyDerivationMethodImpl;
+import org.apache.xml.security.keys.derivedKey.HKDFParamsImpl;
 import org.apache.xml.security.utils.EncryptionConstants;
 import org.apache.xml.security.utils.KeyUtils;
 
@@ -187,6 +187,32 @@ public final class XMLCipherUtil {
         }
     }
 
+    /**
+     * Get the JCE hmac name for the given digest uri
+     *
+     * @param digestAlgorithm the digest algorithm
+     * @return the JCE hmac name algorithm
+     * @throws IllegalArgumentException if the digest algorithm is not supported/unknown
+     */
+    public static String getJCEMacHashForHashUri(String digestAlgorithm) throws NoSuchAlgorithmException {
+
+        LOG.log(Level.DEBUG, "Get JCE MacHash name for digest algorithm [{0}]", digestAlgorithm);
+        switch (digestAlgorithm) {
+            case MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA1:
+                return "HmacSHA1";
+            case MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA3_224:
+                return "HmacSHA224";
+            case MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA256:
+                return "HmacSHA256";
+            case MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384:
+                return "HmacSHA384";
+            case MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512:
+                return "HmacSHA512";
+            default:
+                throw  new NoSuchAlgorithmException("Unknown/not supported hash algorithm: ["+digestAlgorithm+"]  for MacHash algorighme");
+        }
+    }
+
 
     /**
      * Construct an KeyAgreementParameterSpec object from the given parameters
@@ -250,17 +276,32 @@ public final class XMLCipherUtil {
      */
     public static KeyDerivationParameter constructKeyDerivationParameter(KeyDerivationMethod keyDerivationMethod, int keyBitLength) throws XMLSecurityException {
         String keyDerivationAlgorithm = keyDerivationMethod.getAlgorithm();
-        if (!EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(keyDerivationAlgorithm)) {
-            throw new XMLEncryptionException("unknownAlgorithm", keyDerivationAlgorithm);
+        if (EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(keyDerivationAlgorithm)) {
+            ConcatKDFParamsImpl concatKDFParams = (ConcatKDFParamsImpl) keyDerivationMethod.getKDFParams();
+
+            return  constructConcatKeyDerivationParameter(keyBitLength, concatKDFParams.getDigestMethod(), concatKDFParams.getAlgorithmId(),
+                    concatKDFParams.getPartyUInfo(), concatKDFParams.getPartyVInfo(),
+                    concatKDFParams.getSuppPubInfo(),concatKDFParams.getSuppPrivInfo());
+
+        } else if (EncryptionConstants.ALGO_ID_KEYDERIVATION_HKDF.equals(keyDerivationAlgorithm)) {
+            HKDFParamsImpl hKDFParams = (HKDFParamsImpl) keyDerivationMethod.getKDFParams();
+            return constructHKDFKeyDerivationParameter(keyBitLength,
+                    hKDFParams.getDigestMethod(),
+                    hKDFParams.getSalt()!=null? Base64.getDecoder().decode(hKDFParams.getSalt()):new byte[0],
+                    hKDFParams.getInfo()!=null? hexStringToByteArray(hKDFParams.getInfo()):new byte[0]);
         }
-        ConcatKDFParamsImpl concatKDFParams = ((KeyDerivationMethodImpl) keyDerivationMethod).getConcatKDFParams();
-
-        return  constructConcatKeyDerivationParameter(keyBitLength, concatKDFParams.getDigestMethod(), concatKDFParams.getAlgorithmId(),
-                concatKDFParams.getPartyUInfo(), concatKDFParams.getPartyVInfo(),
-                concatKDFParams.getSuppPubInfo(),concatKDFParams.getSuppPrivInfo());
-
+        throw new XMLEncryptionException("unknownAlgorithm", keyDerivationAlgorithm);
     }
 
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
 
     /**
      * Construct a ConcatKeyDerivationParameter object from the key length and digest method.
@@ -300,6 +341,17 @@ public final class XMLCipherUtil {
         kdp.setPartyVInfo(partyVInfo);
         kdp.setSuppPubInfo(suppPubInfo);
         kdp.setSuppPrivInfo(suppPrivInfo);
+        return kdp;
+    }
+
+
+    public static HMacKeyDerivationParameter constructHKDFKeyDerivationParameter(int keyBitLength,
+                                                                                 String digestMethod,
+                                                                                 byte[] salt,
+                                                                                 byte[] info){
+        HMacKeyDerivationParameter kdp = new HMacKeyDerivationParameter(keyBitLength, digestMethod);
+        kdp.setSalt(salt);
+        kdp.setInfo(info);
         return kdp;
     }
 }

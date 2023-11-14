@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 /**
  * Class ConcatKDFParamsImpl is an DOM representation of the ConcatKDFParams.
  */
-public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
+public class ConcatKDFParamsImpl extends Encryption11ElementProxy implements KDFParams {
 
 
     /**
@@ -55,7 +55,7 @@ public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
      */
     public void setAlgorithmId(String algorithm) {
         if (algorithm != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_ALGORITHM_ID, algorithm);
+            setLocalAttribute(EncryptionConstants._ATT_ALGORITHM_ID, algorithm);
         }
     }
 
@@ -66,11 +66,11 @@ public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
     /**
      * Sets the <code>PartyUInfo</code> attribute
      *
-     * @param partyUInfo
+     * @param partyUInfo bit string for partyUInfo parameter of ConcatKDF function (may be null)
      */
     public void setPartyUInfo(String partyUInfo) {
         if (partyUInfo != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_PARTYUINFO, partyUInfo);
+            setLocalAttribute(EncryptionConstants._ATT_PARTYUINFO, partyUInfo);
         }
     }
 
@@ -81,11 +81,11 @@ public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
     /**
      * Sets the <code>PartyVInfo</code> attribute
      *
-     * @param partyVInfo
+     * @param partyVInfo bit string for partyVInfo parameter of ConcatKDF function (may be null)
      */
     public void setPartyVInfo(String partyVInfo) {
         if (partyVInfo != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_PARTYVINFO, partyVInfo);
+            setLocalAttribute(EncryptionConstants._ATT_PARTYVINFO, partyVInfo);
         }
     }
 
@@ -96,11 +96,11 @@ public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
     /**
      * Sets the <code>SuppPubInfo</code> attribute
      *
-     * @param suppPubInfo
+     * @param suppPubInfo bit string for suppPubInfo parameter of ConcatKDF function (may be null)
      */
     public void setSuppPubInfo(String suppPubInfo) {
         if (suppPubInfo != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_SUPPPUBINFO, suppPubInfo);
+            setLocalAttribute(EncryptionConstants._ATT_SUPPPUBINFO, suppPubInfo);
         }
     }
 
@@ -111,12 +111,12 @@ public class ConcatKDFParamsImpl extends Encryption11ElementProxy {
     /**
      * Sets the <code>SuppPrivInfo</code> attribute
      *
-     * @param suppPrivInfo
+     * @param suppPrivInfo bit string for suppPrivInfo parameter of ConcatKDF function (may be null)
      */
 
     public void setSuppPrivInfo(String suppPrivInfo) {
         if (suppPrivInfo != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_SUPPPRIVINFO, suppPrivInfo);
+            setLocalAttribute(EncryptionConstants._ATT_SUPPPRIVINFO, suppPrivInfo);
         }
     }
 

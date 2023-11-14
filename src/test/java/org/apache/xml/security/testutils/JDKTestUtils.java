@@ -118,7 +118,6 @@ public class JDKTestUtils {
         return auxiliaryProvider!=null && Security.getProvider(auxiliaryProvider.getName())!=null ;
     }
 
-
     public static boolean isAlgorithmSupported(String algorithm, boolean useAuxiliaryProvider) {
         String alg = algorithm.toLowerCase();
         int iJDKVersion = getJDKVersion();

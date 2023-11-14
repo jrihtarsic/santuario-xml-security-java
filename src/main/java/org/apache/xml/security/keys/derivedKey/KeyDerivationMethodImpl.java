@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -20,9 +20,7 @@ package org.apache.xml.security.keys.derivedKey;
 
 import org.apache.xml.security.encryption.KeyDerivationMethod;
 import org.apache.xml.security.exceptions.XMLSecurityException;
-import org.apache.xml.security.utils.Encryption11ElementProxy;
-import org.apache.xml.security.utils.EncryptionConstants;
-import org.apache.xml.security.utils.XMLUtils;
+import org.apache.xml.security.utils.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -33,7 +31,7 @@ import java.util.StringJoiner;
  *
  */
 public class KeyDerivationMethodImpl extends Encryption11ElementProxy implements KeyDerivationMethod {
-    private ConcatKDFParamsImpl concatKDFParams;
+    private KDFParams kdfParams;
 
     /**
      * Constructor KeyDerivationMethodImpl creates a new KeyDerivationMethodImpl instance.
@@ -62,7 +60,7 @@ public class KeyDerivationMethodImpl extends Encryption11ElementProxy implements
      */
     public void setAlgorithm(String algorithm) {
         if (algorithm != null) {
-            setLocalIdAttribute(EncryptionConstants._ATT_ALGORITHM, algorithm);
+            setLocalAttribute(EncryptionConstants._ATT_ALGORITHM, algorithm);
         }
     }
 
@@ -71,27 +69,39 @@ public class KeyDerivationMethodImpl extends Encryption11ElementProxy implements
         return getLocalAttribute(EncryptionConstants._ATT_ALGORITHM);
     }
 
-    public ConcatKDFParamsImpl getConcatKDFParams() throws XMLSecurityException {
+    @Override
+    public KDFParams getKDFParams() throws XMLSecurityException {
 
-        if (concatKDFParams != null) {
-            return concatKDFParams;
+        if (kdfParams != null) {
+            return kdfParams;
+        }
+        String kdfAlgorithm = getAlgorithm();
+
+        if (EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(kdfAlgorithm)) {
+            Element concatKDFParamsElement =
+                    XMLUtils.selectXenc11Node(getElement().getFirstChild(), EncryptionConstants._TAG_CONCATKDFPARAMS, 0);
+            if (concatKDFParamsElement == null) {
+                return null;
+            }
+            kdfParams = new ConcatKDFParamsImpl(concatKDFParamsElement, getBaseURI());
+        } else if (EncryptionConstants.ALGO_ID_KEYDERIVATION_HKDF.equals(kdfAlgorithm)) {
+            Element hkdfParamsElement =
+                    XMLUtils.selectNode(getElement().getFirstChild(),Constants.XML_DSIG_NS_MORE_07_05, EncryptionConstants._TAG_HKDFPARAMS, 0);
+            if (hkdfParamsElement == null) {
+                return null;
+            }
+            kdfParams = new HKDFParamsImpl(hkdfParamsElement, Constants.XML_DSIG_NS_MORE_07_05);
         }
 
-        Element concatKDFParamsElement =
-                XMLUtils.selectXenc11Node(getElement().getFirstChild(), EncryptionConstants._TAG_CONCATKDFPARAMS, 0);
-
-        if (concatKDFParamsElement == null) {
-            return null;
-        }
-        concatKDFParams = new ConcatKDFParamsImpl(concatKDFParamsElement, getBaseURI());
-
-        return concatKDFParams;
+        return kdfParams;
     }
 
-    public void setConcatKDFParams(ConcatKDFParamsImpl concatKDFParams) {
-        this.concatKDFParams = concatKDFParams;
-        appendSelf(concatKDFParams);
-        addReturnToSelf();
+    public void setKDFParams(KDFParams kdfParams) {
+        this.kdfParams = kdfParams;
+        if (kdfParams instanceof ElementProxy) {
+            appendSelf((ElementProxy)kdfParams);
+            addReturnToSelf();
+        }
     }
 
     @Override
@@ -102,7 +112,7 @@ public class KeyDerivationMethodImpl extends Encryption11ElementProxy implements
     @Override
     public String toString() {
         return new StringJoiner(", ", KeyDerivationMethodImpl.class.getSimpleName() + "[", "]")
-                .add("concatKDFParams=" + concatKDFParams)
+                .add("kdfParams=" + kdfParams)
                 .toString();
     }
 }

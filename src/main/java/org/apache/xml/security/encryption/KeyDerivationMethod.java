@@ -19,6 +19,9 @@
 
 package org.apache.xml.security.encryption;
 
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.keys.derivedKey.KDFParams;
+
 /**
  * The key derivation is to generate new cryptographic key material from existing key material such as the shared
  * secret and any other (private or public) information. The purpose of the key derivation is an extension of a given
@@ -43,4 +46,6 @@ public interface KeyDerivationMethod {
      * @return the algorithm URI of this <code>KeyDerivationMethod</code>
      */
     String getAlgorithm();
+
+    KDFParams getKDFParams() throws XMLSecurityException;
 }

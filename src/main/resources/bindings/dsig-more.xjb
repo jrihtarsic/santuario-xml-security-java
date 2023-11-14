@@ -1,0 +1,9 @@
+<bindings xmlns="https://jakarta.ee/xml/ns/jaxb"
+          xmlns:xs="http://www.w3.org/2001/XMLSchema"
+          version="3.0">
+    <bindings schemaLocation="schemas/xmldsig-more-rfc9231.xsd" node="/xs:schema">
+        <schemaBindings>
+            <package name="org.apache.xml.security.binding.xmldsigmore"/>
+        </schemaBindings>
+    </bindings>
+</bindings>

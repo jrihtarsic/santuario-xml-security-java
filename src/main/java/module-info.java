@@ -42,6 +42,7 @@ module org.apache.santuario.xmlsec {
     exports org.apache.xml.security.encryption.params;
     exports org.apache.xml.security.exceptions;
     exports org.apache.xml.security.keys;
+    exports org.apache.xml.security.keys.derivedKey;
     exports org.apache.xml.security.keys.content;
     exports org.apache.xml.security.keys.content.keyvalues;
     exports org.apache.xml.security.keys.content.x509;

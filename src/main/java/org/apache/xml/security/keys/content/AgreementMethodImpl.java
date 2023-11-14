@@ -22,11 +22,14 @@ import org.apache.xml.security.encryption.AgreementMethod;
 import org.apache.xml.security.encryption.KeyDerivationMethod;
 import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.encryption.params.ConcatKeyDerivationParameter;
+import org.apache.xml.security.encryption.params.HMacKeyDerivationParameter;
 import org.apache.xml.security.encryption.params.KeyAgreementParameterSpec;
+import org.apache.xml.security.encryption.params.KeyDerivationParameter;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.OriginatorKeyInfo;
 import org.apache.xml.security.keys.RecipientKeyInfo;
 import org.apache.xml.security.keys.derivedKey.ConcatKDFParamsImpl;
+import org.apache.xml.security.keys.derivedKey.HKDFParamsImpl;
 import org.apache.xml.security.keys.derivedKey.KeyDerivationMethodImpl;
 import org.apache.xml.security.utils.*;
 import org.w3c.dom.Document;
@@ -37,9 +40,8 @@ import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PublicKey;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.Base64;
 
 
 /**
@@ -65,7 +67,7 @@ public class AgreementMethodImpl extends EncryptionElementProxy implements KeyIn
      *
      * @param doc the {@link Document} in which <code>AgreementMethod</code> will be placed
      * @param keyAgreementParameter the {@link KeyAgreementParameterSpec} from which <code>AgreementMethod</code> will be generated
-     * @throws XMLEncryptionException
+     * @throws XMLEncryptionException if Key derivation algorithm is not supported
      */
     public AgreementMethodImpl(Document doc, KeyAgreementParameterSpec keyAgreementParameter) throws XMLEncryptionException {
         this(doc, keyAgreementParameter.getKeyAgreementAlgorithm());
@@ -109,7 +111,7 @@ public class AgreementMethodImpl extends EncryptionElementProxy implements KeyIn
      * Constructor AgreementMethodImpl based on XML {@link Element}.
      *
      * @param element the XML {@link Element} containing AgreementMethod information
-     * @throws XMLSecurityException
+     * @throws XMLSecurityException if the construction fails for any reason
      */
     public AgreementMethodImpl(Element element) throws XMLSecurityException {
         super(element, EncryptionConstants.EncryptionSpecNS);
@@ -290,16 +292,19 @@ public class AgreementMethodImpl extends EncryptionElementProxy implements KeyIn
      * @throws XMLEncryptionException if Key derivation algorithm is not supported
      */
     private KeyDerivationMethod createKeyDerivationMethod(KeyAgreementParameterSpec keyAgreementParameter) throws XMLEncryptionException {
-        ConcatKeyDerivationParameter kdfParameters = (ConcatKeyDerivationParameter)
-                keyAgreementParameter.getKeyDerivationParameter();
+        KeyDerivationParameter kdfParameters = keyAgreementParameter.getKeyDerivationParameter();
 
         KeyDerivationMethodImpl keyDerivationMethod = new KeyDerivationMethodImpl(getDocument());
         keyDerivationMethod.setAlgorithm(kdfParameters.getAlgorithm());
 
         if (EncryptionConstants.ALGO_ID_KEYDERIVATION_CONCATKDF.equals(kdfParameters.getAlgorithm())) {
-            ConcatKDFParamsImpl concatKDFParams = getConcatKDFParams(kdfParameters);
-            keyDerivationMethod.setConcatKDFParams(concatKDFParams);
-        } else {
+            ConcatKDFParamsImpl concatKDFParams = getConcatKDFParams((ConcatKeyDerivationParameter)kdfParameters);
+            keyDerivationMethod.setKDFParams(concatKDFParams);
+        } else  if (EncryptionConstants.ALGO_ID_KEYDERIVATION_HKDF.equals(kdfParameters.getAlgorithm())) {
+            HKDFParamsImpl kdfParams = getHKDFParams((HMacKeyDerivationParameter)kdfParameters);
+            keyDerivationMethod.setKDFParams(kdfParams);
+        }
+        else {
             throw new XMLEncryptionException("Unsupported Key Derivation Algorithm");
         }
         return keyDerivationMethod;
@@ -320,5 +325,41 @@ public class AgreementMethodImpl extends EncryptionElementProxy implements KeyIn
         concatKDFParams.setSuppPubInfo(kdfParameters.getSuppPubInfo());
         concatKDFParams.setSuppPrivInfo(kdfParameters.getSuppPrivInfo());
         return concatKDFParams;
+    }
+
+    private HKDFParamsImpl getHKDFParams(HMacKeyDerivationParameter kdfParameters) {
+        HKDFParamsImpl kdfParams = new HKDFParamsImpl(getDocument());
+        kdfParams.setDigestMethod(kdfParameters.getDigestAlgorithm());
+        if (kdfParameters.getSalt()!=null) {
+            kdfParams.setSalt(Base64.getEncoder().encodeToString(kdfParameters.getSalt()));
+        }
+        if (kdfParameters.getInfo()!=null) {
+            kdfParams.setInfo(byteArrayToHex(kdfParameters.getInfo()));
+        }
+        // set parameters
+        kdfParams.setKeyLength(kdfParameters.getKeyBitLength()/8);
+
+        return kdfParams;
+    }
+
+    /**
+     * Method byteArrayToHex converts byte array to hex string.
+     * @param ba the byte array to convert
+     * @return the hex string of the byte array
+     */
+    public static String byteArrayToHex(byte[] ba) {
+        if (ba == null) {
+            return null;
+        }
+        if (ba.length == 0) {
+            return "";
+        }
+
+        StringBuilder buffer = new StringBuilder(ba.length * 2);
+        for (byte b : ba) {
+            buffer.append(Character.forDigit((b >> 4) & 0xF, 16));
+            buffer.append(Character.forDigit((b & 0xF), 16));
+        }
+        return buffer.toString();
     }
 }

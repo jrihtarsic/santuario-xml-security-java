@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+elementFormDefault="qualified" vc:minVersion="1.1"
+ xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:dsig-more="https://www.w3.org/2007/05/xmldsig-more#"
+ targetNamespace="https://www.w3.org/2007/05/xmldsig-more#">
+
+ 	<xs:import namespace='http://www.w3.org/2000/09/xmldsig#'
+ 			schemaLocation='./xmldsig-core-schema.xsd'/>
+
+    <xs:element name="HKDFParams" type="dsig-more:HKDFParamsType"></xs:element>
+
+    <xs:complexType name="HKDFParamsType">
+        <xs:sequence>
+            <xs:element ref="ds:DigestMethod" minOccurs="1" maxOccurs="1"></xs:element>
+            <xs:element name="Salt" minOccurs="0" maxOccurs="1" type="xs:base64Binary"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="KeyLength" type="xs:positiveInteger"></xs:attribute>
+        <xs:attribute name="Info" type="xs:string" use="required"></xs:attribute>
+    </xs:complexType>
+
+</xs:schema>
