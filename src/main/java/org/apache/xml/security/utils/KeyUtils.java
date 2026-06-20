@@ -53,7 +53,8 @@ public class KeyUtils {
         RSASSA_PSS("RSASSA-PSS", "1.2.840.113549.1.1.10"),
         DH("DiffieHellman", "1.2.840.113549.1.3.1"),
         XDH("XDH", null),
-        EdDSA("EdDSA", null);
+        EdDSA("EdDSA", null),
+        ML_DSA("ML-DSA", null);
         private final String jceName;
         private final String oid;
 
@@ -110,7 +111,11 @@ public class KeyUtils {
         X25519("x25519", "RFC 7748", KeyAlgorithmType.XDH, "1.3.101.110"),
         X448("x448", "RFC 7748", KeyAlgorithmType.XDH, "1.3.101.111"),
         ED25519("ed25519", "RFC 8032", KeyAlgorithmType.EdDSA, "1.3.101.112"),
-        ED448("ed448", "RFC 8032", KeyAlgorithmType.EdDSA, "1.3.101.113");
+        ED448("ed448", "RFC 8032", KeyAlgorithmType.EdDSA, "1.3.101.113"),
+        //See IETF RFC 9881
+        ML_DSA_44("ML-DSA-44", "FIPS 204", KeyAlgorithmType.ML_DSA, "2.16.840.1.101.3.4.3.17"),
+        ML_DSA_65("ML-DSA-65", "FIPS 204", KeyAlgorithmType.ML_DSA, "2.16.840.1.101.3.4.3.18"),
+        ML_DSA_87("ML-DSA-87", "FIPS 204", KeyAlgorithmType.ML_DSA, "2.16.840.1.101.3.4.3.19");
 
         private final String name;
         private final String origin;

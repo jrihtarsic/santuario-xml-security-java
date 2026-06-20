@@ -94,6 +94,12 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
         "http://www.w3.org/2021/04/xmldsig-more#eddsa-ed25519";
     static final String ED448 =
         "http://www.w3.org/2021/04/xmldsig-more#eddsa-ed448";
+
+    // see draft-eastlake-rfc9231bis for these algorithm definitions
+    static final String ML_DSA_44 = "http://www.w3.org/tbd#ml-dsa-44";
+    static final String ML_DSA_65 = "http://www.w3.org/tbd#ml-dsa-65";
+    static final String ML_DSA_87 = "http://www.w3.org/tbd#ml-dsa-87";
+
     static final String ECDSA_SHA3_224 =
         "http://www.w3.org/2021/04/xmldsig-more#ecdsa-sha3-224";
     static final String ECDSA_SHA3_256 =
@@ -269,6 +275,12 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
             return new EDDSA_ED25519(smElem);
         } else if (alg.equals(ED448)) {
             return new EDDSA_ED448(smElem);
+        } else if (alg.equals(ML_DSA_44)) {
+            return new MLDSA_44(smElem);
+        } else if (alg.equals(ML_DSA_65)) {
+            return new MLDSA_65(smElem);
+        } else if (alg.equals(ML_DSA_87)) {
+            return new MLDSA_87(smElem);
         } else {
             throw new MarshalException
                 ("unsupported SignatureMethod algorithm: " + alg);
@@ -402,7 +414,7 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
 
     abstract static class AbstractRSAPSSSignatureMethod
             extends AbstractRSASignatureMethod {
-    
+
         AbstractRSAPSSSignatureMethod(AlgorithmParameterSpec params)
                 throws InvalidAlgorithmParameterException {
             super(params);
@@ -1289,6 +1301,97 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
         @Override
         String getJCAAlgorithm() {
             return "Ed448";
+        }
+    }
+    abstract static class AbstractMLDSASignatureMethod extends DOMSignatureMethod {
+
+        AbstractMLDSASignatureMethod(AlgorithmParameterSpec params)
+                throws InvalidAlgorithmParameterException {
+            super(params);
+        }
+
+        AbstractMLDSASignatureMethod(Element dmElem) throws MarshalException {
+            super(dmElem);
+        }
+
+        /** Returns {@code sig} unchanged — ML-DSA produces a raw deterministic signature. */
+        @Override
+        byte[] postSignFormat(Key key, byte[] sig) {
+            return sig;
+        }
+
+        /** Returns {@code sig} unchanged — no DER conversion needed for ML-DSA. */
+        @Override
+        byte[] preVerifyFormat(Key key, byte[] sig) {
+            return sig;
+        }
+
+        @Override
+        Type getAlgorithmType() {
+            return Type.MLDSA;
+        }
+    }
+
+    static final class MLDSA_44 extends AbstractMLDSASignatureMethod {
+        MLDSA_44(AlgorithmParameterSpec params)
+                throws InvalidAlgorithmParameterException {
+            super(params);
+        }
+
+        MLDSA_44(Element dmElem) throws MarshalException {
+            super(dmElem);
+        }
+
+        @Override
+        public String getAlgorithm() {
+            return ML_DSA_44;
+        }
+
+        @Override
+        String getJCAAlgorithm() {
+            return "ML-DSA-44";
+        }
+    }
+
+    static final class MLDSA_65 extends AbstractMLDSASignatureMethod {
+        MLDSA_65(AlgorithmParameterSpec params)
+                throws InvalidAlgorithmParameterException {
+            super(params);
+        }
+
+        MLDSA_65(Element dmElem) throws MarshalException {
+            super(dmElem);
+        }
+
+        @Override
+        public String getAlgorithm() {
+            return ML_DSA_65;
+        }
+
+        @Override
+        String getJCAAlgorithm() {
+            return "ML-DSA-65";
+        }
+    }
+
+    static final class MLDSA_87 extends AbstractMLDSASignatureMethod {
+        MLDSA_87(AlgorithmParameterSpec params)
+                throws InvalidAlgorithmParameterException {
+            super(params);
+        }
+
+        MLDSA_87(Element dmElem) throws MarshalException {
+            super(dmElem);
+        }
+
+        @Override
+        public String getAlgorithm() {
+            return ML_DSA_87;
+        }
+
+        @Override
+        String getJCAAlgorithm() {
+            return "ML-DSA-87";
         }
     }
 }

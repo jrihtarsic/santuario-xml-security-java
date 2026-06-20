@@ -55,7 +55,10 @@ public class JDKTestUtils {
                     new AbstractMap.SimpleImmutableEntry<>("ed448", 16),
                     new AbstractMap.SimpleImmutableEntry<>("xdh", 11),
                     new AbstractMap.SimpleImmutableEntry<>("x25519", 11),
-                    new AbstractMap.SimpleImmutableEntry<>("x448", 11))
+                    new AbstractMap.SimpleImmutableEntry<>("x448", 11),
+                    new AbstractMap.SimpleImmutableEntry<>("ml-dsa-44", 24),
+                    new AbstractMap.SimpleImmutableEntry<>("ml-dsa-65", 24),
+                    new AbstractMap.SimpleImmutableEntry<>("ml-dsa-87", 24))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     private static final Set<String> SUPPORTED_ALGORITHMS = Stream.of(Security.getProviders())
